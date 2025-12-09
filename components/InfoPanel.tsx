@@ -36,7 +36,7 @@ export const InfoPanel: React.FC<InfoPanelProps> = ({ selectedPart, onClose }) =
   return (
     <div className="absolute top-6 right-6 w-80 z-20 pointer-events-none">
        {/* Frame Effect */}
-       <div className="pointer-events-auto relative bg-slate-900/95 border-2 border-sky-500/50 backdrop-blur-xl p-1 shadow-[0_0_30px_rgba(14,165,233,0.3)] rounded-sm overflow-hidden animate-in fade-in slide-in-from-right-10 duration-300">
+       <div className="pointer-events-none relative bg-slate-900/95 border-2 border-sky-500/50 backdrop-blur-xl p-1 shadow-[0_0_30px_rgba(14,165,233,0.3)] rounded-sm overflow-hidden animate-in fade-in slide-in-from-right-10 duration-300">
             {/* Scanline decoration */}
             <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0 pointer-events-none bg-[length:100%_4px,3px_100%]" />
             
@@ -46,19 +46,19 @@ export const InfoPanel: React.FC<InfoPanelProps> = ({ selectedPart, onClose }) =
                         <Cpu size={16} className={loading ? "animate-spin" : ""} />
                         <span className="font-mono text-xs font-bold tracking-widest">ANALYSIS_MODULE</span>
                     </div>
-                    <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
+                    <button onClick={onClose} className="pointer-events-auto text-slate-500 hover:text-white transition-colors">
                         <X size={18} />
                     </button>
                 </div>
 
                 {loading ? (
-                    <div className="py-8 flex flex-col items-center justify-center text-sky-500 gap-2">
+                    <div className="py-8 flex flex-col items-center justify-center text-sky-500 gap-2 pointer-events-none select-none">
                         <Loader2 className="animate-spin" size={32} />
                         <span className="font-mono text-xs animate-pulse">QUERYING_DATABASE...</span>
                     </div>
                 ) : (
                     info && (
-                        <div className="space-y-3 font-mono">
+                        <div className="space-y-3 font-mono pointer-events-none select-none">
                             <h2 className="text-2xl font-bold text-white uppercase break-words">{info.title}</h2>
                             <p className="text-sm text-slate-300 leading-relaxed border-l-2 border-sky-500 pl-3">
                                 {info.description}
