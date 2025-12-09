@@ -1,0 +1,5 @@
+{
+  "name": "BiblioTech: Book Anatomy Explorer",
+  "description": "An interactive 3D schematic explorer of physical book anatomy using React Three Fiber and Gemini AI for educational context.",
+  "requestFramePermissions": []
+}
