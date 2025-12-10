@@ -40,6 +40,7 @@ const BOOK_THICKNESS = 0.8; // Textblock thickness
 const COVER_THICKNESS = 0.08;
 const TEXTBLOCK_WIDTH = BOOK_WIDTH - 0.15; // Slightly recessed from cover edge
 
+// Creates marbled paper texture for endpapers
 const createMarbleTextureData = () => {
     const canvas = document.createElement('canvas');
     canvas.width = 128;
@@ -237,22 +238,17 @@ const BookModelComponent: React.FC<BookModelProps> = ({ config, onPartClick, hig
       
       {/* --- TEXT BLOCK --- */}
       <group position={[0.05, 0, 0]} onClick={(e) => { e.stopPropagation(); onPartClick('textblock'); }}>
+        {/* Main textblock body */}
         <RoundedBox args={[TEXTBLOCK_WIDTH, BOOK_HEIGHT - 0.2, BOOK_THICKNESS]} radius={0.01} smoothness={2}>
           <meshStandardMaterial 
-            // In X-Ray mode, use PAPER color with transparency, instead of pure white
             color={COLORS.PAPER} 
             transparent={config.showEndpapers} 
-            // Increased opacity to 0.55 so we see it has color, but still see ribbon inside
             opacity={config.showEndpapers ? 0.55 : 1}
-            // High roughness prevents environment reflection from blocking the view
             roughness={config.showEndpapers ? 1.0 : 0.8}
             metalness={0}
-            // Disable depth write in X-ray mode so internal opaque objects (ribbon) render correctly
             depthWrite={!config.showEndpapers}
-            // Ensure double sided rendering so transparency works from all angles
             side={THREE.DoubleSide}
           />
-          {/* Page edge texture lines */}
           {config.showEndpapers && <Edges color={COLORS.PAGE_EDGES_XRAY} threshold={15} />}
           {!config.showEndpapers && <Edges color={COLORS.PAGE_EDGES_NORMAL} threshold={30} />}
           {highlightedPart === 'textblock' && <Outlines thickness={outlineThickness} color={COLORS.SCHEMATIC} />}
