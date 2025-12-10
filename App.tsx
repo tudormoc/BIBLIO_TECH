@@ -1,4 +1,4 @@
-import React, { useState, Suspense } from 'react';
+import React, { useState, useRef, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment, Grid, ContactShadows, Loader } from '@react-three/drei';
 import { BookConfiguration, BookPart } from './types';
@@ -17,6 +17,27 @@ const App: React.FC = () => {
   });
 
   const [selectedPart, setSelectedPart] = useState<BookPart | null>(null);
+  const isDraggingRef = useRef(false);
+  const dragStartPos = useRef({ x: 0, y: 0 });
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    dragStartPos.current = { x: e.clientX, y: e.clientY };
+    isDraggingRef.current = false;
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    const dx = Math.abs(e.clientX - dragStartPos.current.x);
+    const dy = Math.abs(e.clientY - dragStartPos.current.y);
+    if (dx > 5 || dy > 5) {
+      isDraggingRef.current = true;
+    }
+  };
+
+  const handleBackgroundClick = () => {
+    if (!isDraggingRef.current) {
+      setSelectedPart(null);
+    }
+  };
 
   return (
     <div className="w-full h-screen flex bg-slate-950 text-white overflow-hidden selection:bg-sky-500/30">
@@ -27,7 +48,11 @@ const App: React.FC = () => {
       </div>
 
       {/* Main 3D Canvas Area */}
-      <div className="flex-1 relative">
+      <div 
+        className="flex-1 relative"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+      >
         <Canvas shadows camera={{ position: [4, 2, 5], fov: 45 }}>
           <color attach="background" args={['#0f172a']} />
           
@@ -58,7 +83,14 @@ const App: React.FC = () => {
                 cellColor="#1e293b" 
                 sectionColor="#334155" 
                 fadeDistance={20} 
+                onClick={handleBackgroundClick}
             />
+            
+            {/* Invisible background plane to catch clicks */}
+            <mesh position={[0, 0, -5]} onClick={handleBackgroundClick}>
+              <planeGeometry args={[100, 100]} />
+              <meshBasicMaterial transparent opacity={0} />
+            </mesh>
             
             <OrbitControls 
                 makeDefault 

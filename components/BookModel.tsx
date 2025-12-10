@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { RoundedBox, Outlines, Edges, Text } from '@react-three/drei';
 import * as THREE from 'three';
 import { BookPart } from '../types';
+import { bookPartsData } from '../data/bookPartsData';
 
 interface BookModelProps {
   config: {
@@ -298,7 +299,7 @@ export const BookModel: React.FC<BookModelProps> = ({ config, onPartClick, highl
       {/* Front Board */}
       <group ref={frontCoverRef} position={[0, 0, BOOK_THICKNESS/2 + COVER_THICKNESS/2]} onClick={(e) => { e.stopPropagation(); onPartClick('cover'); }}>
         <RoundedBox args={[BOOK_WIDTH, BOOK_HEIGHT, COVER_THICKNESS]} radius={0.01} smoothness={2}>
-          <meshStandardMaterial {...getMaterialProps('cover')} />
+          <meshStandardMaterial {...getMaterialProps('cover')} depthWrite={true} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
           {/* In X-Ray mode, show edges to define the board */}
           {config.showEndpapers && <Edges color="white" opacity={0.3} transparent />}
           {highlightedPart === 'cover' && <Outlines thickness={outlineThickness} color={COLORS.SCHEMATIC} />}
@@ -313,7 +314,8 @@ export const BookModel: React.FC<BookModelProps> = ({ config, onPartClick, highl
                     side={THREE.DoubleSide} 
                     transparent={config.showEndpapers} 
                     opacity={config.showEndpapers ? 0.4 : 1}
-                    map={config.showEndpapers ? null : marbleTexture}
+                    map={marbleTexture}
+                    alphaTest={config.showEndpapers ? 0 : undefined}
                 />
                 {highlightedPart === 'endpapers' && <Outlines thickness={0.01} color={COLORS.SCHEMATIC} />}
             </mesh>
@@ -323,7 +325,7 @@ export const BookModel: React.FC<BookModelProps> = ({ config, onPartClick, highl
       {/* Back Board */}
       <group ref={backCoverRef} position={[0, 0, -(BOOK_THICKNESS/2 + COVER_THICKNESS/2)]} onClick={(e) => { e.stopPropagation(); onPartClick('cover'); }}>
         <RoundedBox args={[BOOK_WIDTH, BOOK_HEIGHT, COVER_THICKNESS]} radius={0.01} smoothness={2}>
-          <meshStandardMaterial {...getMaterialProps('cover')} />
+          <meshStandardMaterial {...getMaterialProps('cover')} depthWrite={true} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
           {config.showEndpapers && <Edges color="white" opacity={0.3} transparent />}
           {highlightedPart === 'cover' && <Outlines thickness={outlineThickness} color={COLORS.SCHEMATIC} />}
         </RoundedBox>
@@ -337,7 +339,8 @@ export const BookModel: React.FC<BookModelProps> = ({ config, onPartClick, highl
                     side={THREE.DoubleSide} 
                     transparent={config.showEndpapers} 
                     opacity={config.showEndpapers ? 0.4 : 1}
-                    map={config.showEndpapers ? null : marbleTexture}
+                    map={marbleTexture}
+                    alphaTest={config.showEndpapers ? 0 : undefined}
                 />
                 {highlightedPart === 'endpapers' && <Outlines thickness={0.01} color={COLORS.SCHEMATIC} />}
             </mesh>
@@ -349,7 +352,7 @@ export const BookModel: React.FC<BookModelProps> = ({ config, onPartClick, highl
          {/* Square spine is just a box */}
          <mesh>
             <boxGeometry args={[COVER_THICKNESS, BOOK_HEIGHT + 0.04, SPINE_WIDTH_TOTAL]} />
-            <meshStandardMaterial {...getMaterialProps('spine')} />
+            <meshStandardMaterial {...getMaterialProps('spine')} depthWrite={true} polygonOffset polygonOffsetFactor={2} polygonOffsetUnits={2} />
             {highlightedPart === 'spine' && <Outlines thickness={outlineThickness} color={COLORS.SCHEMATIC} />}
          </mesh>
       </group>
@@ -433,6 +436,13 @@ export const BookModel: React.FC<BookModelProps> = ({ config, onPartClick, highl
              
              {highlightedPart === 'dustjacket' && <Text position={[0, 2.5, 0]} fontSize={0.2} color={COLORS.DUST_JACKET_TINT}>Dust Jacket</Text>}
         </group>
+      )}
+
+      {/* Floating Label for All Selected Parts */}
+      {highlightedPart && (
+        <Text position={[0, 2.5, 0]} fontSize={0.2} color={COLORS.SCHEMATIC}>
+          {bookPartsData[highlightedPart]?.title || highlightedPart}
+        </Text>
       )}
 
     </group>
