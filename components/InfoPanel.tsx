@@ -31,7 +31,8 @@ export const InfoPanel: React.FC<InfoPanelProps> = ({ selectedPart, onClose }) =
     }
   }, [selectedPart]);
 
-  if (!selectedPart) return null;
+  // Keep mounted but hidden to avoid first-click lag
+  if (!selectedPart) return <div className="hidden" />;
 
   return (
     <div className="absolute top-6 right-6 w-80 z-20 pointer-events-none">

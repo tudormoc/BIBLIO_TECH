@@ -1,1 +1,8 @@
 @import "tailwindcss";
+
+/* Loading animation for progress bar */
+@keyframes loading {
+  0% { width: 0%; }
+  50% { width: 100%; }
+  100% { width: 0%; }
+}

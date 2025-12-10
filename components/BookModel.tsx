@@ -68,7 +68,7 @@ const createMarbleTextureData = () => {
     return tex;
 };
 
-export const BookModel: React.FC<BookModelProps> = ({ config, onPartClick, highlightedPart }) => {
+const BookModelComponent: React.FC<BookModelProps> = ({ config, onPartClick, highlightedPart }) => {
   const groupRef = useRef<THREE.Group>(null);
   const spineRef = useRef<THREE.Group>(null);
   const bandsRef = useRef<THREE.Group>(null);
@@ -189,6 +189,13 @@ export const BookModel: React.FC<BookModelProps> = ({ config, onPartClick, highl
 
   return (
     <group ref={groupRef} rotation={[0, -Math.PI / 6, 0]}>
+      
+      {/* Hidden preloader for Outlines shader - prevents first-click lag */}
+      <mesh visible={false}>
+        <boxGeometry args={[0.1, 0.1, 0.1]} />
+        <meshBasicMaterial />
+        <Outlines thickness={0.01} color="#000000" />
+      </mesh>
       
       {/* --- TEXT BLOCK --- */}
       <group position={[0.05, 0, 0]} onClick={(e) => { e.stopPropagation(); onPartClick('textblock'); }}>
@@ -448,3 +455,7 @@ export const BookModel: React.FC<BookModelProps> = ({ config, onPartClick, highl
     </group>
   );
 };
+
+
+// Memoize to prevent re-renders when parent state changes
+export const BookModel = React.memo(BookModelComponent);

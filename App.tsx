@@ -1,12 +1,16 @@
-import React, { useState, useRef, Suspense } from 'react';
+import React, { useState, useRef, Suspense, useCallback } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Environment, Grid, ContactShadows, Loader } from '@react-three/drei';
+import { OrbitControls, Environment, Grid, ContactShadows } from '@react-three/drei';
 import { BookConfiguration, BookPart } from './types';
 import { Controls } from './components/Controls';
 import { BookModel } from './components/BookModel';
 import { InfoPanel } from './components/InfoPanel';
+import { LoadingScreen } from './components/LoadingScreen';
+import { TIMING } from './config/timing';
 
 const App: React.FC = () => {
+  const [isReady, setIsReady] = useState(false);
+  const [fadeOut, setFadeOut] = useState(false);
   const [config, setConfig] = useState<BookConfiguration>({
     color: "#2c3e50",
     hasDustJacket: false,
@@ -19,6 +23,11 @@ const App: React.FC = () => {
   const [selectedPart, setSelectedPart] = useState<BookPart | null>(null);
   const isDraggingRef = useRef(false);
   const dragStartPos = useRef({ x: 0, y: 0 });
+
+  // Memoize callbacks to prevent BookModel re-renders
+  const handlePartClick = useCallback((part: BookPart) => {
+    setSelectedPart(part);
+  }, []);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     dragStartPos.current = { x: e.clientX, y: e.clientY };
@@ -39,8 +48,29 @@ const App: React.FC = () => {
     }
   };
 
+  // Handle Canvas ready with delay to ensure models are rendered and shaders compiled
+  const handleCanvasReady = () => {
+    // Warm-up: trigger a selection to preload all rendering paths
+    setTimeout(() => {
+      setSelectedPart('cover');
+      setTimeout(() => {
+        setSelectedPart(null);
+        setFadeOut(true);
+        setTimeout(() => setIsReady(true), 500);
+      }, 100);
+    }, TIMING.INITIAL_LOADING);
+  };
+
   return (
-    <div className="w-full h-screen flex bg-slate-950 text-white overflow-hidden selection:bg-sky-500/30">
+    <>
+      {/* Loading screen with fade out */}
+      {!isReady && (
+        <div className={`transition-opacity duration-500 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}>
+          <LoadingScreen />
+        </div>
+      )}
+      
+      <div className="w-full h-screen flex bg-slate-950 text-white overflow-hidden selection:bg-sky-500/30">
       
       {/* Sidebar Controls */}
       <div className="relative z-10 shadow-2xl">
@@ -53,7 +83,11 @@ const App: React.FC = () => {
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
       >
-        <Canvas shadows camera={{ position: [4, 2, 5], fov: 45 }}>
+        <Canvas 
+          shadows 
+          camera={{ position: [4, 2, 5], fov: 45 }}
+          onCreated={handleCanvasReady}
+        >
           <color attach="background" args={['#0f172a']} />
           
           <Suspense fallback={null}>
@@ -70,7 +104,7 @@ const App: React.FC = () => {
             <group position={[0, -0.2, 0]}>
                 <BookModel 
                     config={config} 
-                    onPartClick={setSelectedPart}
+                    onPartClick={handlePartClick}
                     highlightedPart={selectedPart}
                 />
                 <ContactShadows position={[0, -2.05, 0]} opacity={0.4} scale={10} blur={2} far={4} />
@@ -103,14 +137,7 @@ const App: React.FC = () => {
           </Suspense>
         </Canvas>
 
-        {/* Loading Overlay */}
-        <Loader 
-          dataInterpolation={(p) => `LOADING ASSETS ${p.toFixed(0)}%`} 
-          containerStyles={{ background: 'rgba(15, 23, 42, 0.9)', zIndex: 100 }}
-          innerStyles={{ width: '400px' }}
-          barStyles={{ height: '4px', background: '#0ea5e9' }}
-          dataStyles={{ fontFamily: 'JetBrains Mono', fontSize: '12px', color: '#0ea5e9' }}
-        />
+
 
         {/* Info Panel Overlay */}
         <InfoPanel 
@@ -126,6 +153,7 @@ const App: React.FC = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 
