@@ -75,6 +75,10 @@ const BookModelComponent: React.FC<BookModelProps> = ({ config, onPartClick, hig
   const frontCoverRef = useRef<THREE.Group>(null);
   const backCoverRef = useRef<THREE.Group>(null);
   
+  // Independent refs for endpapers
+  const frontEndpaperRef = useRef<THREE.Group>(null);
+  const backEndpaperRef = useRef<THREE.Group>(null);
+  
   // Independent refs for Dust Jacket parts to follow their parents
   const jacketFrontRef = useRef<THREE.Group>(null);
   const jacketBackRef = useRef<THREE.Group>(null);
@@ -118,6 +122,40 @@ const BookModelComponent: React.FC<BookModelProps> = ({ config, onPartClick, hig
         bandsRef.current.position.x = THREE.MathUtils.lerp(
             bandsRef.current.position.x, 
             (-(TEXTBLOCK_WIDTH/2) + 0.05) - (targetExpansion * 0.8), 
+            lerpSpeed
+        );
+    }
+
+    // --- ENDPAPER ANIMATION ---
+    
+    // Front Endpaper: attached to cover when closed, stays closer to cover when exploded
+    if (frontEndpaperRef.current) {
+        const textblockFrontZ = BOOK_THICKNESS / 2;
+        // When exploded, position 75% toward the cover (closer to cover than textblock)
+        const endpaperZ = THREE.MathUtils.lerp(
+            textblockFrontZ + 0.001, // Close to textblock when closed
+            frontZ - (COVER_THICKNESS/2 + 0.15), // Closer to cover when exploded
+            targetExpansion
+        );
+        frontEndpaperRef.current.position.z = THREE.MathUtils.lerp(
+            frontEndpaperRef.current.position.z,
+            endpaperZ,
+            lerpSpeed
+        );
+    }
+
+    // Back Endpaper: attached to cover when closed, stays closer to cover when exploded
+    if (backEndpaperRef.current) {
+        const textblockBackZ = -BOOK_THICKNESS / 2;
+        // When exploded, position 75% toward the cover (closer to cover than textblock)
+        const endpaperZ = THREE.MathUtils.lerp(
+            textblockBackZ - 0.001, // Close to textblock when closed
+            backZ + (COVER_THICKNESS/2 + 0.15), // Closer to cover when exploded
+            targetExpansion
+        );
+        backEndpaperRef.current.position.z = THREE.MathUtils.lerp(
+            backEndpaperRef.current.position.z,
+            endpaperZ,
             lerpSpeed
         );
     }
@@ -311,22 +349,22 @@ const BookModelComponent: React.FC<BookModelProps> = ({ config, onPartClick, hig
           {config.showEndpapers && <Edges color="white" opacity={0.3} transparent />}
           {highlightedPart === 'cover' && <Outlines thickness={outlineThickness} color={COLORS.SCHEMATIC} />}
         </RoundedBox>
-        
-        {/* Endpaper Front */}
-        <group position={[0, 0, -COVER_THICKNESS/2 - 0.001]}>
-            <mesh onClick={(e) => {e.stopPropagation(); onPartClick('endpapers')}}>
-                <planeGeometry args={[BOOK_WIDTH - 0.05, BOOK_HEIGHT - 0.05]} />
-                <meshStandardMaterial 
-                    color={COLORS.ENDPAPER} 
-                    side={THREE.DoubleSide} 
-                    transparent={config.showEndpapers} 
-                    opacity={config.showEndpapers ? 0.4 : 1}
-                    map={marbleTexture}
-                    alphaTest={config.showEndpapers ? 0 : undefined}
-                />
-                {highlightedPart === 'endpapers' && <Outlines thickness={0.01} color={COLORS.SCHEMATIC} />}
-            </mesh>
-        </group>
+      </group>
+
+      {/* Front Endpaper - Independent for animation */}
+      <group ref={frontEndpaperRef} position={[0, 0, BOOK_THICKNESS/2 + 0.001]}>
+          <mesh onClick={(e) => {e.stopPropagation(); onPartClick('endpapers')}}>
+              <planeGeometry args={[BOOK_WIDTH - 0.05, BOOK_HEIGHT - 0.05]} />
+              <meshStandardMaterial 
+                  color={COLORS.ENDPAPER} 
+                  side={THREE.DoubleSide} 
+                  transparent={config.showEndpapers} 
+                  opacity={config.showEndpapers ? 0.4 : 1}
+                  map={marbleTexture}
+                  alphaTest={config.showEndpapers ? 0 : undefined}
+              />
+              {highlightedPart === 'endpapers' && <Outlines thickness={0.01} color={COLORS.SCHEMATIC} />}
+          </mesh>
       </group>
 
       {/* Back Board */}
@@ -336,22 +374,22 @@ const BookModelComponent: React.FC<BookModelProps> = ({ config, onPartClick, hig
           {config.showEndpapers && <Edges color="white" opacity={0.3} transparent />}
           {highlightedPart === 'cover' && <Outlines thickness={outlineThickness} color={COLORS.SCHEMATIC} />}
         </RoundedBox>
+      </group>
 
-         {/* Endpaper Back */}
-         <group position={[0, 0, COVER_THICKNESS/2 + 0.001]}>
-            <mesh onClick={(e) => {e.stopPropagation(); onPartClick('endpapers')}} rotation={[0, Math.PI, 0]}>
-                <planeGeometry args={[BOOK_WIDTH - 0.05, BOOK_HEIGHT - 0.05]} />
-                <meshStandardMaterial 
-                    color={COLORS.ENDPAPER} 
-                    side={THREE.DoubleSide} 
-                    transparent={config.showEndpapers} 
-                    opacity={config.showEndpapers ? 0.4 : 1}
-                    map={marbleTexture}
-                    alphaTest={config.showEndpapers ? 0 : undefined}
-                />
-                {highlightedPart === 'endpapers' && <Outlines thickness={0.01} color={COLORS.SCHEMATIC} />}
-            </mesh>
-        </group>
+      {/* Back Endpaper - Independent for animation */}
+      <group ref={backEndpaperRef} position={[0, 0, -(BOOK_THICKNESS/2 + 0.001)]}>
+          <mesh onClick={(e) => {e.stopPropagation(); onPartClick('endpapers')}} rotation={[0, Math.PI, 0]}>
+              <planeGeometry args={[BOOK_WIDTH - 0.05, BOOK_HEIGHT - 0.05]} />
+              <meshStandardMaterial 
+                  color={COLORS.ENDPAPER} 
+                  side={THREE.DoubleSide} 
+                  transparent={config.showEndpapers} 
+                  opacity={config.showEndpapers ? 0.4 : 1}
+                  map={marbleTexture}
+                  alphaTest={config.showEndpapers ? 0 : undefined}
+              />
+              {highlightedPart === 'endpapers' && <Outlines thickness={0.01} color={COLORS.SCHEMATIC} />}
+          </mesh>
       </group>
 
       {/* Spine Board (Square Outer Case) */}
