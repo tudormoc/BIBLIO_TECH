@@ -2,7 +2,7 @@
 
 Interactive 3D book anatomy explorer powered by React Three Fiber and Gemini AI.
 
-**Live Demo:** [https://tudormoc.github.io/BIBLIO_TECH](https://tudormoc.github.io/BIBLIO_TECH)
+**Live Demo:** <a href="https://tudormoc.github.io/BIBLIO_TECH" target="_blank">https://tudormoc.github.io/BIBLIO_TECH</a>
 
 ## Setup
 
